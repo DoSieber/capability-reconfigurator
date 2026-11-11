@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Capability Reconfiguration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Capability Reconfiguration</h1>
+    <div class="tools">
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-map" aria-selected="true">Map</button>
+        <button role="tab" id="tab-log" aria-selected="false">Review log</button>
+      </div>
+      <button class="btn" id="btn-example" hidden>Load example</button>
+      <button class="btn" id="btn-copy" hidden>Copy summary</button>
+      <button class="btn" id="btn-reset" hidden>Start over</button>
+    </div>
+  </header>
+
+  <main id="view-map">
+    <div class="layout">
+      <section aria-label="Frontier">
+        <div class="banner" id="banner" hidden>
+          <p id="banner-text"></p>
+          <input id="banner-note" placeholder="Why did it move? (optional)">
+          <button class="btn primary" id="btn-reviewed">Mark as reviewed</button>
+        </div>
+        <div id="zones"></div>
+        <p class="legend">A dashed outline marks a capability that is needed on both sides of the frontier.</p>
+        <section class="summary" aria-label="Overall capabilities of the role">
+          <div class="sum-head"><strong>Overall capabilities of the role</strong><span class="keys"><span><i class="dot o"></i>outside</span><span><i class="dot i"></i>inside</span><span><i class="dot b"></i>both</span></span></div>
+          <div class="sum-grid" id="summary"></div>
+        </section>
+      </section>
+
+      <aside class="library" data-drop="library" aria-label="Library">
+        <div class="lib-head"><strong>Library</strong><p>Drag tasks into a zone and capabilities into its knowledge, skills or abilities. The capabilities listed are only examples, so add your own. Drag anything back here to remove it.</p></div>
+        <div id="lib"></div>
+      </aside>
+    </div>
+  </main>
+
+  <main id="view-log" hidden>
+    <p class="hint" style="margin:0 0 14px">Each time tasks cross the frontier and you mark the change as reviewed, the adjustments to the capabilities are recorded here.</p>
+    <div class="log" id="log"></div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+{
+  "tasks": [
+    "Answer standard customer questions in chat or email",
+    "Document customer interactions in the CRM",
+    "Process account changes such as address changes",
+    "Calm an upset customer on the phone",
+    "Persuade a customer who wants to cancel to stay"
+  ],
+  "knowledge": [
+    "Where to find information in internal systems",
+    "Sources the AI draws its answers from",
+    "Data the AI tools can access",
+    "Exceptions and edge cases in policy rules",
+    "Who to involve for escalations and approvals",
+    "Local customs and practices",
+    "Detailed product, tariff and policy facts"
+  ],
+  "skills": [
+    "Fast reading and typing",
+    "Critical Thinking",
+    "Problem Framing",
+    "Information Gathering",
+    "Social and interpersonal skills",
+    "Multi-language skills"
+  ],
+  "abilities": [
+    "Selective Attention",
+    "Inductive Reasoning",
+    "Split Attention",
+    "Fast Comprehension",
+    "Strong Memory",
+    "Stress Tolerance"
+  ],
+  "example": {
+    "inside": {
+      "tasks": [
+        "Answer standard customer questions in chat or email",
+        "Document customer interactions in the CRM",
+        "Process account changes such as address changes"
+      ],
+      "knowledge": [
+        "Where to find information in internal systems",
+        "Sources the AI draws its answers from",
+        "Data the AI tools can access"
+      ],
+      "skills": [
+        "Fast reading and typing",
+        "Critical Thinking",
+        "Information Gathering"
+      ],
+      "abilities": [
+        "Selective Attention",
+        "Split Attention",
+        "Fast Comprehension"
+      ]
+    },
+    "outside": {
+      "tasks": [
+        "Calm an upset customer on the phone",
+        "Persuade a customer who wants to cancel to stay"
+      ],
+      "knowledge": [
+        "Exceptions and edge cases in policy rules",
+        "Who to involve for escalations and approvals",
+        "Local customs and practices",
+        "Detailed product, tariff and policy facts"
+      ],
+      "skills": [
+        "Critical Thinking",
+        "Problem Framing",
+        "Social and interpersonal skills"
+      ],
+      "abilities": [
+        "Inductive Reasoning",
+        "Strong Memory",
+        "Stress Tolerance"
+      ]
+    }
+  }
+}
