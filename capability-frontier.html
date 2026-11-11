@@ -210,7 +210,7 @@ summary .count{color:var(--muted);font-weight:400;font-size:.88rem;margin-left:a
 
 <script>
 (function(){
-  const KEY = "capability-frontier-v3";
+  const KEY = "capability-frontier-v4";
   const ZONES = {
     outside: {title:"Outside the frontier of AI", q:"What do employees need to recognise limits and do work by themselves?"},
     inside: {title:"Inside the frontier of AI", q:"What must employees keep so they can still judge and take over if needed?"}
@@ -226,13 +226,11 @@ summary .count{color:var(--muted);font-weight:400;font-size:.88rem;margin-left:a
     ["A","Deductive Reasoning"],["A","Inductive Reasoning"],["A","Stress Tolerance"]
   ];
   const DEFAULT_TASKS = [
-    "Answer customer questions about products, services and conditions",
-    "Document customer interactions and actions taken in the CRM",
-    "Process contract changes such as address changes, cancellations or model changes",
-    "Review policy terms to determine whether a claim or transaction is covered",
+    "Answer customer questions about premiums, deductibles and coverage",
+    "Document customer interactions in the CRM",
+    "Process account changes such as address changes",
     "Assess whether a complaint is justified and find its cause",
-    "Resolve complaints by adjusting bills, refunding money or granting goodwill",
-    "Recommend improvements to products, processes or billing"
+    "Resolve complaints by refunding money"
   ];
   const uid = () => Math.random().toString(36).slice(2,9);
   function fresh(){
@@ -438,7 +436,7 @@ summary .count{color:var(--muted);font-weight:400;font-size:.88rem;margin-left:a
     if(!confirm("Load the worked example? Your current work will be replaced.")) return;
     state = fresh();
     const by = n => state.caps.find(c => c.name.startsWith(n)).id;
-    ["inside","inside","inside","inside","outside","outside","outside"].forEach((z,i) => state.tasks[i].zone = z);
+    ["inside","inside","inside","outside","outside"].forEach((z,i) => state.tasks[i].zone = z);
     state.zoneCaps.inside = ["Products","Administrative","Law and regulation","IT systems","Capabilities and limits","Critical Thinking","Troubleshooting","Instructing AI","Written Comprehension","Problem Sensitivity","Deductive Reasoning"].map(by);
     state.zoneCaps.outside = ["Customer and Personal","Products","Law and regulation","Billing","Capabilities and limits","Active Listening","Writing","Critical Thinking","Social Perceptiveness","Complex Problem Solving","Oral Expression","Problem Sensitivity","Inductive Reasoning","Stress Tolerance"].map(by);
     save(); render(); toast("Example loaded");
