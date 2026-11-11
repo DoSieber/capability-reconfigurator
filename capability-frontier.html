@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Capability Reconfiguration</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cabin:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#EEF0EC; --surface:#FFFFFF; --ink:#1B2A21; --muted:#5E6B62; --line:#D5DBD4;
+  --inside:#0B5E34; --inside-ink:#FFFFFF; --inside-soft:#E4F0E8;
+  --outside:#9C8656; --outside-ink:#FFFFFF; --outside-soft:#F4EEE1;
+  --task:#1B2A21; --task-ink:#FFFFFF;
+  --k:#E3ECF7; --k-ink:#24476E; --s:#E2F2EF; --s-ink:#1E5B52; --a:#F1E6F2; --a-ink:#64306A;
+  --flag:#B4541A; --flag-soft:#FBEADF; --over:#0B5E34;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --bg:#121813; --surface:#1B231D; --ink:#E6ECE6; --muted:#9AA79D; --line:#2E3A31;
+    --inside:#3F9A68; --inside-ink:#08140C; --inside-soft:#1C3024;
+    --outside:#C9B17E; --outside-ink:#1A1408; --outside-soft:#30291B;
+    --task:#E6ECE6; --task-ink:#121813;
+    --k:#1F2E40; --k-ink:#A9C6E8; --s:#1C3531; --s-ink:#9AD6CB; --a:#36233A; --a-ink:#DDB3E2;
+    --flag:#F0965C; --flag-soft:#3A2416; --over:#5FC08A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#121813; --surface:#1B231D; --ink:#E6ECE6; --muted:#9AA79D; --line:#2E3A31;
+  --inside:#3F9A68; --inside-ink:#08140C; --inside-soft:#1C3024;
+  --outside:#C9B17E; --outside-ink:#1A1408; --outside-soft:#30291B;
+  --task:#E6ECE6; --task-ink:#121813;
+  --k:#1F2E40; --k-ink:#A9C6E8; --s:#1C3531; --s-ink:#9AD6CB; --a:#36233A; --a-ink:#DDB3E2;
+  --flag:#F0965C; --flag-soft:#3A2416; --over:#5FC08A;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Gill Sans","Gill Sans MT","Cabin","Trebuchet MS",sans-serif;font-size:16px;line-height:1.4}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--inside);outline-offset:2px}
+.wrap{max-width:1280px;margin:0 auto;padding:20px 20px 48px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}
+h1{font-size:1.7rem;font-weight:600;margin:0}
+.tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.tabs button{border:0;background:transparent;padding:5px 14px;border-radius:999px;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--bg)}
+.btn{border:1px solid var(--line);background:var(--surface);padding:6px 12px;border-radius:8px;font-size:.92rem}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--inside);border-color:var(--inside);color:var(--inside-ink)}
+
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:18px;align-items:start}
+@media (max-width:860px){.layout{grid-template-columns:1fr}}
+
+.banner{background:var(--flag-soft);border:1px solid var(--flag);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.banner p{margin:0;flex:1 1 280px}
+.banner input{flex:1 1 220px;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 10px}
+
+.zone{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.zone-head{padding:10px 14px}
+.zone-head strong{display:block;font-weight:600;font-size:1.05rem}
+.zone-head span{font-size:.9rem;opacity:.92}
+.zone.outside .zone-head{background:var(--outside);color:var(--outside-ink)}
+.zone.inside .zone-head{background:var(--inside);color:var(--inside-ink)}
+.zone-body{padding:12px;display:flex;flex-direction:column;gap:10px}
+.zone.outside .zone-body{background:var(--outside-soft)}
+.zone.inside .zone-body{background:var(--inside-soft)}
+.frontier{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:.85rem;margin:10px 0}
+.question{display:flex;flex-direction:column;align-items:center;margin:-4px 0}
+.question::before,.question::after{content:"";width:2px;height:12px}
+.question.outside::before,.question.outside::after{background:var(--outside)}
+.question.inside::before,.question.inside::after{background:var(--inside)}
+.question p{margin:0;max-width:52ch;text-align:center;font-weight:600;font-size:1rem;padding:8px 16px;border-radius:999px;background:var(--surface)}
+.question.outside p{border:2px solid var(--outside)}
+.question.inside p{border:2px solid var(--inside)}
+.frontier::before,.frontier::after{content:"";flex:1;height:14px;background:var(--muted);opacity:.7;
+  -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='14'%3E%3Cpath d='M0 7L10 2L18 11L30 4L37 12L52 1L60 9L74 5L82 13L96 3L106 10L120 7' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") repeat-x left center / 120px 14px;
+  mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='14'%3E%3Cpath d='M0 7L10 2L18 11L30 4L37 12L52 1L60 9L74 5L82 13L96 3L106 10L120 7' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/%3E%3C/svg%3E") repeat-x left center / 120px 14px}
+.frontier::after{-webkit-mask-position:right center;mask-position:right center}
+
+.box{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 12px;transition:box-shadow .12s}
+.box.over{box-shadow:0 0 0 2px var(--over)}
+.box h3{margin:0 0 8px;font-size:.92rem;font-weight:600;color:var(--muted)}
+.box .items{display:flex;flex-wrap:wrap;gap:6px;min-height:34px;align-items:flex-start}
+.ksa{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:640px){.ksa{grid-template-columns:1fr}}
+.ksa .items{flex-direction:column;align-items:flex-start;min-height:90px}
+.drop-hint{color:var(--muted);font-size:.85rem;border:1px dashed var(--line);border-radius:8px;padding:6px 10px;width:100%;text-align:center}
+
+.tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 11px;font-size:.9rem;
+  user-select:none;-webkit-user-select:none;touch-action:none;cursor:grab;border:1px solid transparent;max-width:100%}
+.tag:active{cursor:grabbing}
+.tag.task{background:var(--task);color:var(--task-ink);border-radius:8px;font-weight:500;line-height:1.3}
+.tag.task.moved{box-shadow:0 0 0 2px var(--flag)}
+.tag.K{background:var(--k);color:var(--k-ink)}
+.tag.S{background:var(--s);color:var(--s-ink)}
+.tag.A{background:var(--a);color:var(--a-ink)}
+.tag .t{min-width:0}
+.tag .letter{font-weight:700;font-size:.75rem;opacity:.8}
+.tag.both{border:1px dashed currentColor}
+.tag .x{border:0;background:transparent;padding:0 0 0 2px;font-size:1rem;line-height:1;opacity:.6;cursor:pointer}
+.tag .x:hover{opacity:1}
+.tag.dragging{opacity:.35}
+.ghost{position:fixed;z-index:1000;pointer-events:none;box-shadow:0 6px 18px rgba(0,0,0,.18);transform:rotate(-2deg)}
+.legend{color:var(--muted);font-size:.85rem;margin:10px 2px 0}
+
+.library{background:var(--surface);border:1px solid var(--line);border-radius:12px;position:sticky;top:calc(12px + env(safe-area-inset-top,0px))}
+.library.over{box-shadow:0 0 0 2px var(--over)}
+.lib-head{padding:12px 14px;border-bottom:1px solid var(--line)}
+.lib-head strong{font-weight:600}
+.lib-head p{margin:2px 0 0;color:var(--muted);font-size:.88rem}
+details{border-bottom:1px solid var(--line)}
+summary{list-style:none;padding:10px 14px;font-weight:600;display:flex;align-items:center;cursor:pointer}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font-weight:400;color:var(--muted);font-size:1.2rem}
+details[open] summary::after{content:"−"}
+summary .count{color:var(--muted);font-weight:400;font-size:.88rem;margin-left:auto;margin-right:10px}
+.lib-list{display:flex;flex-wrap:wrap;gap:6px;padding:0 14px 10px}
+.lib-list.tasks{flex-direction:column;align-items:flex-start}
+.lib-empty{color:var(--muted);font-size:.88rem}
+.addrow{display:flex;gap:6px;padding:0 14px 12px}
+.addrow input{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:5px 9px;font-size:.9rem}
+.note{color:var(--muted);font-size:.8rem;padding:8px 14px 12px;margin:0}
+
+.hint{color:var(--muted);font-size:.9rem}
+.summary{margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.sum-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sum-head strong{font-weight:600;font-size:1.05rem}
+.keys{display:flex;gap:14px;color:var(--muted);font-size:.85rem}
+.keys span{display:inline-flex;align-items:center;gap:5px}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1.5px solid var(--line)}
+.dot.o{background:var(--outside);border-color:var(--outside)}
+.dot.i{background:var(--inside);border-color:var(--inside)}
+.dot.b{background:linear-gradient(90deg,var(--outside) 50%,var(--inside) 50%);border-color:transparent}
+.dot.off{background:transparent}
+.sum-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@media (max-width:640px){.sum-grid{grid-template-columns:1fr}}
+.sum-col h3{margin:0 0 6px;font-size:.92rem;font-weight:600;color:var(--muted)}
+.sum-col h3 span{font-weight:400}
+.sum-col ul{list-style:none;margin:0;padding:0}
+.sum-col li{display:flex;gap:8px;align-items:center;padding:4px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.sum-col li:last-child{border-bottom:0}
+.sum-col li .dots{display:inline-flex;gap:3px;flex:none}
+.log{display:flex;flex-direction:column;gap:12px}
+.entry{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.entry .when{color:var(--muted);font-size:.85rem}
+.entry h3{margin:2px 0 6px;font-size:1.05rem;font-weight:600}
+.changes{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-top:8px;font-size:.92rem}
+.changes h4{margin:0 0 4px;font-size:.85rem;color:var(--muted);font-weight:600}
+.changes ul{margin:0;padding-left:18px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:1001}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){.toast,.box{transition:none}}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Capability Reconfiguration</h1>
+    <div class="tools">
+      <div class="tabs" role="tablist">
+        <button role="tab" id="tab-map" aria-selected="true">Map</button>
+        <button role="tab" id="tab-log" aria-selected="false">Review log</button>
+      </div>
+      <button class="btn" id="btn-example" hidden>Load example</button>
+      <button class="btn" id="btn-copy" hidden>Copy summary</button>
+      <button class="btn" id="btn-reset" hidden>Start over</button>
+    </div>
+  </header>
+
+  <main id="view-map">
+    <div class="layout">
+      <section aria-label="Frontier">
+        <div class="banner" id="banner" hidden>
+          <p id="banner-text"></p>
+          <input id="banner-note" placeholder="Why did it move? (optional)">
+          <button class="btn primary" id="btn-reviewed">Mark as reviewed</button>
+        </div>
+        <div id="zones"></div>
+        <p class="legend">A dashed outline marks a capability that is needed on both sides of the frontier.</p>
+        <section class="summary" aria-label="Overall capabilities of the role">
+          <div class="sum-head"><strong>Overall capabilities of the role</strong><span class="keys"><span><i class="dot o"></i>outside</span><span><i class="dot i"></i>inside</span><span><i class="dot b"></i>both</span></span></div>
+          <div class="sum-grid" id="summary"></div>
+        </section>
+      </section>
+
+      <aside class="library" data-drop="library" aria-label="Library">
+        <div class="lib-head"><strong>Library</strong><p>Drag tasks into a zone and capabilities into its knowledge, skills or abilities. Drag anything back here to remove it.</p></div>
+        <div id="lib"></div>
+      </aside>
+    </div>
+  </main>
+
+  <main id="view-log" hidden>
+    <p class="hint" style="margin:0 0 14px">Each time tasks cross the frontier and you mark the change as reviewed, the adjustments to the capabilities are recorded here.</p>
+    <div class="log" id="log"></div>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+  const KEY = "capability-frontier-v3";
+  const ZONES = {
+    outside: {title:"Outside the frontier of AI", q:"What do employees need to recognise limits and do work by themselves?"},
+    inside: {title:"Inside the frontier of AI", q:"What must employees keep so they can still judge and take over if needed?"}
+  };
+  const CATS = [["K","Knowledge"],["S","Skills"],["A","Abilities"]];
+  const DEFAULT_CAPS = [
+    ["K","Customer and Personal Service"],["K","Products, tariffs and contract terms"],["K","Administrative procedures and systems"],
+    ["K","Law and regulation (KVG, VVG, data protection)"],["K","Billing and accounting basics"],["K","IT systems and digital tools"],
+    ["K","Capabilities and limits of AI",true],
+    ["S","Active Listening"],["S","Writing"],["S","Critical Thinking"],["S","Social Perceptiveness"],["S","Complex Problem Solving"],
+    ["S","Troubleshooting"],["S","Instructing AI and checking its output",true],
+    ["A","Oral Expression"],["A","Written Comprehension"],["A","Written Expression"],["A","Problem Sensitivity"],
+    ["A","Deductive Reasoning"],["A","Inductive Reasoning"],["A","Stress Tolerance"]
+  ];
+  const DEFAULT_TASKS = [
+    "Answer customer questions about products, services and conditions",
+    "Document customer interactions and actions taken in the CRM",
+    "Process contract changes such as address changes, cancellations or model changes",
+    "Review policy terms to determine whether a claim or transaction is covered",
+    "Assess whether a complaint is justified and find its cause",
+    "Resolve complaints by adjusting bills, refunding money or granting goodwill",
+    "Recommend improvements to products, processes or billing"
+  ];
+  const uid = () => Math.random().toString(36).slice(2,9);
+  function fresh(){
+    return {
+      caps: DEFAULT_CAPS.map(([cat,name,added]) => ({id:uid(), cat, name, added:!!added})),
+      tasks: DEFAULT_TASKS.map(text => ({id:uid(), text, zone:null})),
+      zoneCaps: {inside:[], outside:[]},
+      pending: null, log: [], open: {T:true}
+    };
+  }
+  function load(){
+    try{ const s = JSON.parse(localStorage.getItem(KEY)); if(s && s.tasks && s.zoneCaps){ s.open = s.open || {T:true}; return s; } }catch(e){}
+    return fresh();
+  }
+  let state = load();
+  const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} };
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  const cap = id => state.caps.find(c => c.id === id);
+  const task = id => state.tasks.find(t => t.id === id);
+  const other = z => z === "inside" ? "outside" : "inside";
+  const toast = m => { const t = $("toast"); t.textContent = m; t.classList.add("show"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 1800); };
+
+  /* ---------- render ---------- */
+  function capTag(c, zone){
+    const both = zone && state.zoneCaps[other(zone)].includes(c.id);
+    return `<span class="tag ${c.cat}${both ? " both" : ""}" data-drag="cap" data-id="${c.id}"${zone ? ` data-from="${zone}"` : ""}${both ? ' title="Also needed on the other side"' : ""}>
+      <span class="letter">${c.cat}</span><span class="t">${esc(c.name)}</span>${zone ? `<button class="x" data-remove="${c.id}" data-zone="${zone}" aria-label="Remove ${esc(c.name)}">×</button>` : ""}</span>`;
+  }
+  function taskTag(t){
+    const moved = state.pending && state.pending.moved.some(m => m.id === t.id);
+    return `<span class="tag task${moved ? " moved" : ""}" data-drag="task" data-id="${t.id}"><span class="t">${esc(t.text)}</span></span>`;
+  }
+
+  function render(){
+    $("zones").innerHTML = ["outside","inside"].map((z, i) => {
+      const tasks = state.tasks.filter(t => t.zone === z);
+      const ksa = CATS.map(([c,label]) => {
+        const list = state.zoneCaps[z].map(cap).filter(x => x && x.cat === c);
+        return `<div class="box" data-drop="caps" data-zone="${z}" data-cat="${c}"><h3>${label}</h3><div class="items">${list.length ? list.map(x => capTag(x, z)).join("") : `<span class="drop-hint">Drop ${label.toLowerCase()} here</span>`}</div></div>`;
+      }).join("");
+      return (i ? `<div class="frontier">frontier</div>` : "") + `
+        <div class="zone ${z}">
+          <div class="zone-head"><strong>${ZONES[z].title}</strong></div>
+          <div class="zone-body">
+            <div class="box" data-drop="tasks" data-zone="${z}"><h3>Tasks</h3><div class="items">${tasks.length ? tasks.map(taskTag).join("") : `<span class="drop-hint">Drop tasks here</span>`}</div></div>
+            <div class="question ${z}"><p>${ZONES[z].q}</p></div>
+            <div class="ksa">${ksa}</div>
+          </div>
+        </div>`;
+    }).join("");
+
+    const p = state.pending;
+    $("banner").hidden = !p;
+    if(p){
+      const names = p.moved.map(m => `“${esc(task(m.id) ? task(m.id).text : m.text)}” moved ${m.to}`).join(", ");
+      $("banner-text").innerHTML = `${names}. Check whether the knowledge, skills and abilities on both sides still fit, then mark the change as reviewed.`;
+    }
+
+    const free = state.tasks.filter(t => !t.zone);
+    const sec = (key, label, count, inner, cls, ph) => `
+      <details data-key="${key}"${state.open[key] ? " open" : ""}>
+        <summary>${label}<span class="count">${count}</span></summary>
+        <div class="lib-list ${cls}">${inner}</div>
+        <div class="addrow"><input data-add="${key}" placeholder="${ph}" aria-label="${ph}"><button class="btn" data-addbtn="${key}">Add</button></div>
+      </details>`;
+    let html = sec("T","Tasks", free.length ? free.length + " left" : "all placed",
+      free.length ? free.map(taskTag).join("") : `<span class="lib-empty">All tasks are placed. Drag one back here to take it off the frontier.</span>`, "tasks", "Add a task");
+    CATS.forEach(([c,label]) => {
+      const list = state.caps.filter(x => x.cat === c);
+      html += sec(c, label, list.length, list.map(x => capTag(x)).join(""), "", "Add your own");
+    });
+    $("lib").innerHTML = html;
+    renderSummary();
+    renderLog();
+  }
+
+  function renderSummary(){
+    $("summary").innerHTML = CATS.map(([c,label]) => {
+      const items = state.caps.filter(x => x.cat === c).map(x => ({x, o:state.zoneCaps.outside.includes(x.id), i:state.zoneCaps.inside.includes(x.id)}))
+        .filter(r => r.o || r.i)
+        .sort((a,b) => ((b.o && b.i) - (a.o && a.i)) || (b.o - a.o));
+      return `<div class="sum-col"><h3>${label} <span>${items.length}</span></h3>` +
+        (items.length ? `<ul>${items.map(r => `<li><i class="dot ${r.o && r.i ? "b" : r.o ? "o" : "i"}" aria-label="${r.o && r.i ? "both sides" : r.o ? "outside" : "inside"}"></i>${esc(r.x.name)}</li>`).join("")}</ul>`
+          : `<p class="hint" style="margin:0">None placed yet.</p>`) + `</div>`;
+    }).join("");
+  }
+
+  function renderLog(){
+    if(!state.log.length){ $("log").innerHTML = `<p class="hint">No reviews yet. Drag a task from one zone to the other, adjust the capabilities and mark the change as reviewed.</p>`; return; }
+    const names = ids => ids.map(id => { const c = cap(id); return c ? `<li>${esc(c.name)}</li>` : ""; }).join("");
+    $("log").innerHTML = state.log.slice().reverse().map(e => {
+      const blocks = [];
+      ["outside","inside"].forEach(z => {
+        if(e.added[z].length) blocks.push(`<div><h4>Added ${z}</h4><ul>${names(e.added[z])}</ul></div>`);
+        if(e.removed[z].length) blocks.push(`<div><h4>Removed ${z}</h4><ul>${names(e.removed[z])}</ul></div>`);
+      });
+      return `<article class="entry"><div class="when">${new Date(e.date).toLocaleString()}</div>
+        <h3>${e.moved.map(m => `${esc(m.text)} moved ${m.to}`).join("<br>")}</h3>
+        ${e.note ? `<p class="hint" style="margin:0">${esc(e.note)}</p>` : ""}
+        ${blocks.length ? `<div class="changes">${blocks.join("")}</div>` : `<p class="hint" style="margin:6px 0 0">No changes to the capabilities were needed.</p>`}</article>`;
+    }).join("");
+  }
+
+  /* ---------- actions ---------- */
+  function placeTask(id, zone){
+    const t = task(id); if(!t || t.zone === zone) return;
+    const from = t.zone; t.zone = zone;
+    if(from && zone){
+      if(!state.pending) state.pending = {before:{inside:state.zoneCaps.inside.slice(), outside:state.zoneCaps.outside.slice()}, moved:[]};
+      state.pending.moved = state.pending.moved.filter(m => m.id !== id);
+      state.pending.moved.push({id, text:t.text, from, to:zone});
+    }
+    save(); render();
+  }
+  function addCap(cid, zone, fromZone){
+    if(fromZone && fromZone !== zone) state.zoneCaps[fromZone] = state.zoneCaps[fromZone].filter(x => x !== cid);
+    if(!state.zoneCaps[zone].includes(cid)) state.zoneCaps[zone].push(cid);
+    save(); render();
+  }
+  function removeCap(cid, zone){ state.zoneCaps[zone] = state.zoneCaps[zone].filter(x => x !== cid); save(); render(); }
+
+  $("btn-reviewed").addEventListener("click", () => {
+    const p = state.pending; if(!p) return;
+    const added = {}, removed = {};
+    ["inside","outside"].forEach(z => {
+      added[z] = state.zoneCaps[z].filter(x => !p.before[z].includes(x));
+      removed[z] = p.before[z].filter(x => !state.zoneCaps[z].includes(x));
+    });
+    state.log.push({date:new Date().toISOString(), moved:p.moved.map(m => ({text:m.text, from:m.from, to:m.to})), added, removed, note:$("banner-note").value.trim()});
+    state.pending = null; $("banner-note").value = ""; save(); render(); toast("Saved to review log");
+  });
+
+  /* ---------- drag and drop (mouse and touch) ---------- */
+  let drag = null;
+  document.addEventListener("pointerdown", e => {
+    if(e.button !== undefined && e.button !== 0) return;
+    if(e.target.closest(".x")) return;
+    const el = e.target.closest("[data-drag]"); if(!el) return;
+    drag = {el, kind:el.dataset.drag, id:el.dataset.id, from:el.dataset.from || null, x:e.clientX, y:e.clientY, started:false};
+  });
+  document.addEventListener("pointermove", e => {
+    if(!drag) return;
+    if(!drag.started){
+      if(Math.hypot(e.clientX - drag.x, e.clientY - drag.y) < 5) return;
+      drag.started = true;
+      const r = drag.el.getBoundingClientRect();
+      drag.dx = drag.x - r.left; drag.dy = drag.y - r.top;
+      drag.ghost = drag.el.cloneNode(true); drag.ghost.classList.add("ghost"); drag.ghost.style.width = r.width + "px";
+      document.body.appendChild(drag.ghost); drag.el.classList.add("dragging");
+    }
+    e.preventDefault();
+    drag.ghost.style.left = (e.clientX - drag.dx) + "px";
+    drag.ghost.style.top = (e.clientY - drag.dy) + "px";
+    const t = findTarget(e.clientX, e.clientY);
+    if(t !== drag.over){ if(drag.over) drag.over.classList.remove("over"); drag.over = t; if(t) t.classList.add("over"); }
+  }, {passive:false});
+  function findTarget(x, y){
+    const el = document.elementFromPoint(x, y); if(!el) return null;
+    const lib = el.closest('[data-drop="library"]');
+    if(drag.kind === "task") return el.closest('[data-drop="tasks"]') || lib;
+    const box = el.closest('[data-drop="caps"]');
+    if(box){
+      const c = cap(drag.id);
+      return box.dataset.cat === c.cat ? box : box.closest(".ksa").querySelector(`[data-cat="${c.cat}"]`);
+    }
+    return drag.from ? lib : null;
+  }
+  function endDrag(cancelled){
+    if(!drag) return;
+    const d = drag; drag = null;
+    if(!d.started) return;
+    d.ghost.remove(); d.el.classList.remove("dragging");
+    if(d.over) d.over.classList.remove("over");
+    if(cancelled || !d.over) return;
+    const t = d.over;
+    if(d.kind === "task") placeTask(d.id, t.dataset.drop === "library" ? null : t.dataset.zone);
+    else if(t.dataset.drop === "caps") addCap(d.id, t.dataset.zone, d.from);
+    else if(t.dataset.drop === "library" && d.from) removeCap(d.id, d.from);
+  }
+  document.addEventListener("pointerup", () => endDrag(false));
+  document.addEventListener("pointercancel", () => endDrag(true));
+
+  /* ---------- library ---------- */
+  document.addEventListener("click", e => {
+    const x = e.target.closest("[data-remove]"); if(x){ removeCap(x.dataset.remove, x.dataset.zone); return; }
+    const ab = e.target.closest("[data-addbtn]"); if(ab) addItem(ab.dataset.addbtn);
+  });
+  document.addEventListener("keydown", e => { if(e.key === "Enter" && e.target.matches("[data-add]")) addItem(e.target.dataset.add); });
+  document.addEventListener("toggle", e => { const d = e.target; if(d.matches && d.matches("details[data-key]")){ state.open[d.dataset.key] = d.open; save(); } }, true);
+  function addItem(key){
+    const input = document.querySelector(`[data-add="${key}"]`); const v = input.value.trim(); if(!v) return;
+    state.open[key] = true;
+    if(key === "T") state.tasks.push({id:uid(), text:v, zone:null});
+    else state.caps.push({id:uid(), cat:key, name:v, added:false});
+    save(); render(); toast("Added");
+    const again = document.querySelector(`[data-add="${key}"]`); if(again) again.focus();
+  }
+
+  /* ---------- toolbar ---------- */
+  $("btn-reset").addEventListener("click", () => { if(confirm("Start over? All placements and reviews will be cleared.")){ state = fresh(); save(); render(); } });
+  $("btn-example").addEventListener("click", () => {
+    if(!confirm("Load the worked example? Your current work will be replaced.")) return;
+    state = fresh();
+    const by = n => state.caps.find(c => c.name.startsWith(n)).id;
+    ["inside","inside","inside","inside","outside","outside","outside"].forEach((z,i) => state.tasks[i].zone = z);
+    state.zoneCaps.inside = ["Products","Administrative","Law and regulation","IT systems","Capabilities and limits","Critical Thinking","Troubleshooting","Instructing AI","Written Comprehension","Problem Sensitivity","Deductive Reasoning"].map(by);
+    state.zoneCaps.outside = ["Customer and Personal","Products","Law and regulation","Billing","Capabilities and limits","Active Listening","Writing","Critical Thinking","Social Perceptiveness","Complex Problem Solving","Oral Expression","Problem Sensitivity","Inductive Reasoning","Stress Tolerance"].map(by);
+    save(); render(); toast("Example loaded");
+  });
+  $("btn-copy").addEventListener("click", async () => {
+    const out = [];
+    ["outside","inside"].forEach(z => {
+      out.push(ZONES[z].title.toUpperCase());
+      out.push("Tasks: " + (state.tasks.filter(t => t.zone === z).map(t => t.text).join("; ") || "none"));
+      CATS.forEach(([c,l]) => out.push(`${l}: ` + (state.zoneCaps[z].map(cap).filter(x => x && x.cat === c).map(x => x.name).join(", ") || "none")));
+      out.push("");
+    });
+    try{ await navigator.clipboard.writeText(out.join("\n")); toast("Summary copied"); }catch(e){ toast("Copying is not available in this browser"); }
+  });
+  function tab(w){
+    $("tab-map").setAttribute("aria-selected", w === "map"); $("tab-log").setAttribute("aria-selected", w === "log");
+    $("view-map").hidden = w !== "map"; $("view-log").hidden = w !== "log";
+  }
+  $("tab-map").addEventListener("click", () => tab("map"));
+  $("tab-log").addEventListener("click", () => tab("log"));
+
+  render();
+})();
+</script>
+</body>
+</html>
